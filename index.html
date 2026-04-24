@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="GutiTrack: software de gestión de flotas. La operativa de tu flota, en una sola app.">
+<title>GutiTrack — Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #111111;
+    --bg-3: #161616;
+    --border: #242424;
+    --ink: #f0f0f0;
+    --ink-dim: #888;
+    --ink-dimmer: #555;
+    --yellow: #FFD400;
+    --yellow-dim: #D4AF00;
+    --orange: #FF8800;
+    --green: #4CAF50;
+    --red: #FF4444;
+    --blue: #2196F3;
+    --purple: #9C27B0;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: rgba(255,212,0,0.15); }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    overflow-x: hidden;
+    font-weight: 400;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-overflow-scrolling: touch;
+  }
+  ::selection { background: var(--yellow); color: #000; }
+  ::-moz-selection { background: var(--yellow); color: #000; }
+  a { color: inherit; -webkit-touch-callout: none; }
+  img, svg { max-width: 100%; height: auto; display: block; }
+
+  /* grid background overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,212,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,212,0,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @media (max-width: 640px) {
+    body::before { background-size: 40px 40px; }
+  }
+
+  /* grain (sólo desktop - en móviles pesa mucho y puede parpadear en iOS) */
+  @media (min-width: 768px) {
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 32px);
+    padding-left: max(clamp(20px, 5vw, 32px), var(--safe-left));
+    padding-right: max(clamp(20px, 5vw, 32px), var(--safe-right));
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.9);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding-top: var(--safe-top);
+  }
+  nav .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(15px, 2vw, 18px);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: inherit;
+    min-height: 44px;
+    min-width: 44px;
+    padding-right: 4px;
+  }
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--yellow);
+    color: #000;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 14px;
+    box-shadow: 0 0 20px rgba(255,212,0,0.3);
+    flex-shrink: 0;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: var(--yellow);
+    color: #000;
+    font-weight: 700;
+    font-size: clamp(11px, 1.4vw, 13px);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 2px solid var(--yellow);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  @media (hover: hover) {
+    .cta-btn:hover {
+      background: transparent;
+      color: var(--yellow);
+      box-shadow: 0 0 24px rgba(255,212,0,0.4);
+      transform: translateY(-1px);
+    }
+  }
+  .cta-btn:active {
+    transform: scale(0.97);
+  }
+  .cta-btn--ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--border);
+  }
+  @media (hover: hover) {
+    .cta-btn--ghost:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      box-shadow: none;
+    }
+  }
+
+  /* ── HERO ── */
+  header.hero {
+    padding: calc(var(--safe-top) + 120px) 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    header.hero { padding: calc(var(--safe-top) + 140px) 0 80px; }
+  }
+  header.hero::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: -30%;
+    width: 80vw;
+    height: 80vw;
+    max-width: 800px;
+    max-height: 800px;
+    background: radial-gradient(circle, rgba(255,212,0,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: rgba(255,212,0,0.08);
+    border: 1px solid rgba(255,212,0,0.3);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--yellow);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--yellow);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  h1.hero-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(38px, 9vw, 128px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    max-width: 16ch;
+    word-break: break-word;
+    hyphens: auto;
+  }
+  h1.hero-title .accent {
+    color: var(--yellow);
+    font-style: italic;
+    display: inline;
+  }
+  h1.hero-title .strike {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+    color: var(--ink-dim);
+    font-size: 0.48em;
+    font-weight: normal;
+    font-style: normal;
+    display: block;
+    margin-bottom: 10px;
+    letter-spacing: 0;
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.3;
+  }
+  .hero-sub {
+    max-width: 560px;
+    font-size: clamp(15px, 2vw, 19px);
+    color: var(--ink-dim);
+    margin-bottom: 32px;
+    line-height: 1.55;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+  @media (min-width: 768px) {
+    .hero-actions { gap: 16px; margin-bottom: 80px; }
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+  }
+  @media (min-width: 768px) {
+    .hero-stats {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding-top: 32px;
+    }
+  }
+  .stat {
+    padding-right: 20px;
+  }
+  @media (min-width: 768px) {
+    .stat { border-right: 1px solid var(--border); padding-right: 24px; }
+    .stat:last-child { border-right: none; }
+  }
+  .stat-num {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(34px, 5vw, 48px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--yellow);
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  @media (min-width: 768px) {
+    .stat-label { font-size: 11px; }
+  }
+
+  /* ── SECTION HEAD ── */
+  section { padding: 70px 0; position: relative; }
+  @media (min-width: 768px) {
+    section { padding: 100px 0; }
+  }
+  .section-head {
+    display: block;
+    margin-bottom: 48px;
+  }
+  @media (min-width: 768px) {
+    .section-head {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+      align-items: start;
+    }
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--yellow);
+    letter-spacing: 0.1em;
+    padding-top: 8px;
+    border-top: 2px solid var(--yellow);
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 768px) {
+    .section-num { font-size: 13px; margin-bottom: 0; }
+  }
+  h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(28px, 5.5vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+    word-break: break-word;
+  }
+  h2 em { color: var(--yellow); font-style: italic; }
+
+  /* ── PROBLEM ── */
+  .problem {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) { .problem-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+  .problem-card {
+    padding: 24px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+  }
+  @media (min-width: 768px) {
+    .problem-card { padding: 32px; }
+  }
+  .problem-card .icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .problem-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--red);
+  }
+  .problem-card p {
+    color: var(--ink-dim);
+    font-size: 14px;
+  }
+  @media (min-width: 768px) {
+    .problem-card h3 { font-size: 20px; }
+    .problem-card p { font-size: 15px; }
+  }
+
+  /* ── FEATURES ── */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    .feat-grid {
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+  }
+  .feat {
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    border-radius: 4px;
+    position: relative;
+    background: var(--bg-2);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  @media (min-width: 768px) {
+    .feat { padding: 36px; }
+  }
+  @media (hover: hover) {
+    .feat:hover {
+      border-color: var(--yellow);
+      transform: translateY(-4px);
+    }
+  }
+  @media (min-width: 768px) {
+    .feat--wide { grid-column: span 7; }
+    .feat--narrow { grid-column: span 5; }
+    .feat--half { grid-column: span 6; }
+    .feat--third { grid-column: span 4; }
+  }
+  .feat-id {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dimmer);
+    letter-spacing: 0.1em;
+  }
+  @media (min-width: 768px) {
+    .feat-id { top: 20px; right: 24px; font-size: 11px; }
+  }
+  .feat h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+    padding-right: 50px;
+  }
+  @media (min-width: 768px) {
+    .feat h3 { font-size: 26px; padding-right: 60px; }
+  }
+  .feat h3 .em { color: var(--yellow); }
+  .feat p {
+    color: var(--ink-dim);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+  @media (min-width: 768px) {
+    .feat p { font-size: 15px; margin-bottom: 20px; }
+  }
+  .feat ul {
+    list-style: none;
+    padding: 0;
+  }
+  .feat ul li {
+    padding: 8px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 13px;
+    color: var(--ink);
+    border-bottom: 1px dashed var(--border);
+    line-height: 1.4;
+  }
+  @media (min-width: 768px) {
+    .feat ul li { font-size: 14px; }
+  }
+  .feat ul li:last-child { border-bottom: none; }
+  .feat ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--yellow);
+    font-weight: 700;
+  }
+
+  /* ── ROLES ── */
+  .roles {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  @media (min-width: 500px) { .role-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .role-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+  .role {
+    padding: 22px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: 3px solid;
+    border-radius: 4px;
+  }
+  @media (min-width: 768px) {
+    .role { padding: 28px; }
+  }
+  .role--super { border-top-color: var(--purple); }
+  .role--admin { border-top-color: var(--yellow); }
+  .role--chofer { border-top-color: var(--green); }
+  .role--andarin { border-top-color: var(--blue); }
+  .role-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+  .role h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  @media (min-width: 768px) {
+    .role h3 { font-size: 22px; }
+  }
+  .role p { font-size: 13px; color: var(--ink-dim); }
+
+  /* ── TECH STACK ── */
+  .stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .stack { grid-template-columns: 1fr 1fr; gap: 64px; }
+  }
+  .stack-list {
+    list-style: none;
+  }
+  .stack-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    gap: 12px;
+  }
+  @media (min-width: 768px) {
+    .stack-list li { padding: 18px 0; font-size: 15px; }
+  }
+  .stack-list li:first-child { border-top: 1px solid var(--border); }
+  .stack-list .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  @media (min-width: 768px) {
+    .stack-list .lbl { font-size: 12px; }
+  }
+  .stack-list .val {
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+  }
+  .stack-list .val .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(255,212,0,0.1);
+    color: var(--yellow);
+    font-size: 11px;
+    border-radius: 3px;
+    margin-left: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Diagram ASCII - con scroll horizontal en móvil para que no desborde */
+  .diagram-wrap {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (min-width: 768px) {
+    .diagram-wrap { padding: 32px; }
+  }
+  .diagram {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    white-space: pre;
+    min-width: 300px;
+  }
+  @media (min-width: 768px) {
+    .diagram { font-size: 12px; line-height: 1.8; }
+  }
+  .diagram .k { color: var(--yellow); font-weight: 600; }
+  .diagram .c { color: var(--green); }
+  .diagram .m { color: var(--blue); }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+  @media (min-width: 768px) {
+    .timeline { padding-left: 40px; }
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--yellow), transparent);
+  }
+  @media (min-width: 768px) {
+    .timeline::before { left: 12px; }
+  }
+  .tl-item {
+    position: relative;
+    padding-bottom: 32px;
+  }
+  @media (min-width: 768px) {
+    .tl-item { padding-bottom: 40px; }
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -28px; top: 8px;
+    width: 12px; height: 12px;
+    background: var(--yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 16px rgba(255,212,0,0.5);
+  }
+  @media (min-width: 768px) {
+    .tl-item::before { left: -34px; width: 14px; height: 14px; box-shadow: 0 0 0 4px var(--bg), 0 0 16px rgba(255,212,0,0.5); }
+  }
+  .tl-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--yellow);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  @media (min-width: 768px) {
+    .tl-date { font-size: 12px; margin-bottom: 8px; }
+  }
+  .tl-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  @media (min-width: 768px) {
+    .tl-title { font-size: 20px; }
+  }
+  .tl-desc { color: var(--ink-dim); font-size: 13px; line-height: 1.5; }
+  @media (min-width: 768px) {
+    .tl-desc { font-size: 14px; }
+  }
+
+  /* ── CTA FINAL ── */
+  .final {
+    padding: 90px 0 calc(90px + var(--safe-bottom));
+    text-align: center;
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .final { padding: 140px 0 calc(140px + var(--safe-bottom)); }
+  }
+  .final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center top, rgba(255,212,0,0.15), transparent 60%),
+      radial-gradient(ellipse at center bottom, rgba(255,136,0,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .final-content { position: relative; z-index: 2; }
+  .final h2 {
+    max-width: 20ch;
+    margin: 0 auto 20px;
+  }
+  .final p {
+    color: var(--ink-dim);
+    max-width: 520px;
+    margin: 0 auto 32px;
+    font-size: clamp(15px, 2vw, 18px);
+  }
+  .cta-big {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 32px;
+    background: var(--yellow);
+    color: #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(14px, 2vw, 18px);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 40px rgba(255,212,0,0.3);
+    min-height: 56px;
+    max-width: 100%;
+    word-break: break-word;
+    text-align: center;
+  }
+  @media (min-width: 768px) {
+    .cta-big { padding: 22px 44px; gap: 14px; }
+  }
+  @media (hover: hover) {
+    .cta-big:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 60px rgba(255,212,0,0.5);
+    }
+    .cta-big:hover .arrow {
+      transform: translateX(6px);
+    }
+  }
+  .cta-big:active {
+    transform: scale(0.98);
+  }
+  .cta-big .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 0 calc(32px + var(--safe-bottom));
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dimmer);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  @media (min-width: 768px) {
+    footer { padding: 40px 0 calc(40px + var(--safe-bottom)); font-size: 11px; }
+  }
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  footer a {
+    color: var(--yellow);
+    text-decoration: none;
+  }
+
+  /* ── REVEAL ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Accesibilidad: respetar prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="brand">
+      <span class="brand-logo">G</span>
+      <span>GUTITRACK</span>
+    </a>
+    <a href="https://www.gutitrack.com" target="_blank" rel="noopener noreferrer" class="cta-btn">
+      Accede a la APK →
+    </a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dot"></span>
+      Dossier v6.1
+    </div>
+    <h1 class="hero-title">
+      <span class="strike">Hojas de cálculo, WhatsApp, partes en papel.</span>
+      La <span class="accent">operativa</span> de tu flota, <span class="accent">en una sola app.</span>
+    </h1>
+    <p class="hero-sub">
+      GutiTrack sustituye los excels, los mensajes dispersos y los partes en papel por una plataforma que tus choferes, andarines y administradores usan todos los días — con datos en tiempo real, facturación automática y sin fricciones.
+    </p>
+    <div class="hero-actions">
+      <a href="https://youtube.com/@gutitrack?si=er9VocQmqfIRUg_W" target="_blank" rel="noopener noreferrer" class="cta-btn">
+       <h0.5> Canal YouTube</h0.5> →
+      </a>
+      <a href="#que-es" class="cta-btn cta-btn--ghost">
+        Leer el dossier
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Roles de usuario</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">9+</div>
+        <div class="stat-label">Módulos integrados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">10s</div>
+        <div class="stat-label">Refresco en vivo</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Cierre automático</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="problem" id="que-es">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">01 / EL PROBLEMA</div>
+      <h2>Gestionar una flota no debería <em>quemar</em> tu dia a dia.... .</h2>
+    </div>
+
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <span class="icon">📋</span>
+        <h3>Partes perdidos</h3>
+        <p>El chofer anota en papel, el administrativo los pasa a Excel, alguien pierde una hoja y la factura del mes sale mal.</p>
+      </div>
+      <div class="problem-card reveal">
+        <span class="icon">📱</span>
+        <h3>WhatsApp caótico</h3>
+        <p>Tickets de gasolina, incidencias, avisos a conductores… todo mezclado en un chat imposible de auditar.</p>
+      </div>
+      <div class="problem-card reveal">
+        <span class="icon">🧾</span>
+        <h3>Facturación manual</h3>
+        <p>Cada mes, alguien tiene que copiar datos, calcular entregas, cuadrar las rutas y rellenar una plantilla a mano.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">02 / LA SOLUCIÓN</div>
+      <h2>Una app. Cuatro roles. Todo conectado <em>en tiempo real</em>.</h2>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat feat--wide reveal">
+        <span class="feat-id">MOD.01</span>
+        <h3>Monitor <span class="em">en vivo</span></h3>
+        <p>Los administradores ven en el momento cada jornada, gasto o incidencia que registra un chofer, gracias a WebSocket de Supabase + polling cada 10s.</p>
+        <ul>
+          <li>Indicador "🟢 EN VIVO" en la cabecera</li>
+          <li>Refresco automático al volver al foreground</li>
+          <li>Alertas bloqueantes que no se pueden ignorar</li>
+        </ul>
+      </div>
+      <div class="feat feat--narrow reveal">
+        <span class="feat-id">MOD.02</span>
+        <h3>Flota <span class="em">inteligente</span></h3>
+        <p>Un solo origen de verdad para cada furgoneta: matrícula, km, ITV, seguro, estado de uso.</p>
+        <ul>
+          <li>Selector de furgoneta disponible</li>
+          <li>Bloqueo automático si ya está en uso</li>
+          <li>Alertas de ITV y seguro</li>
+        </ul>
+      </div>
+
+      <div class="feat feat--narrow reveal">
+        <span class="feat-id">MOD.03</span>
+        <h3>Gastos <span class="em">&amp; tickets</span></h3>
+        <p>Combustible, peajes, mantenimiento. Cada gasto queda vinculado a la furgoneta activa del chofer.</p>
+        <ul>
+          <li>Foto del ticket adjunta</li>
+          <li>Autocompleta matrícula y km</li>
+          <li>El admin puede asignar a cualquiera</li>
+        </ul>
+      </div>
+      <div class="feat feat--wide reveal">
+        <span class="feat-id">MOD.04</span>
+        <h3>Facturación <span class="em">en un clic</span></h3>
+        <p>Selecciona chofer, período y listo. GutiTrack rellena tu plantilla Excel real (formato, logotipo y celdas respetados) y la devuelve lista para compartir por WhatsApp, email o guardar.</p>
+        <ul>
+          <li>Edge Functions de Supabase (Deno + xlsx)</li>
+          <li>Tu propia plantilla embebida</li>
+          <li>Funciona en web y en APK</li>
+        </ul>
+      </div>
+
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.05</span>
+        <h3>Historial <span class="em">auditable</span></h3>
+        <p>Filtra por fecha, chofer, matrícula o ruta. Exporta a Excel con una sola pulsación. Cada jornada queda registrada con su matrícula, km, entregas, recogidas e incidencias.</p>
+      </div>
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.06</span>
+        <h3>Contactos <span class="em">por empresa</span></h3>
+        <p>Cada administrador configura el gestor y el contacto de facturación de su empresa. Los botones "Enviar a Gestor" y "Enviar a Facturación" usan esos destinos en toda la app.</p>
+      </div>
+
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.07</span>
+        <h3>Cierre <span class="em">automático</span></h3>
+        <p>Si un chofer olvida cerrar la jornada, GutiTrack la cierra sola a las 23:59 y libera la furgoneta.</p>
+      </div>
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.08</span>
+        <h3>Multi-empresa</h3>
+        <p>Cada empresa ve sus datos. El superadmin gestiona empresas, límites y feature flags.</p>
+      </div>
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.09</span>
+        <h3>Multi-plataforma</h3>
+        <p>La misma base de código corre como APK y web progresiva (pronto  iOS, app de escritorio).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="roles">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">03 / ROLES</div>
+      <h2>Cada persona ve <em>lo que necesita</em>. Ni más, ni menos.</h2>
+    </div>
+
+    <div class="role-grid">
+      <div class="role role--super reveal">
+        <div class="role-tag">NIVEL 0</div>
+        <h3>SuperAdmin</h3>
+        <p>Gestiona empresas, activa módulos, define límites de choferes/furgonetas. Visión total del sistema.</p>
+      </div>
+      <div class="role role--admin reveal">
+        <div class="role-tag">NIVEL 1</div>
+        <h3>Admin</h3>
+        <p>Da de alta choferes, registra furgonetas, configura contactos, factura, audita jornadas en vivo.</p>
+      </div>
+      <div class="role role--chofer reveal">
+        <div class="role-tag">NIVEL 2</div>
+        <h3>Chofer</h3>
+        <p>Elige furgoneta, introduce km, registra entregas/recogidas/incidencias, sube tickets de combustible.</p>
+      </div>
+      <div class="role role--andarin reveal">
+        <div class="role-tag">NIVEL 2</div>
+        <h3>Andarín</h3>
+        <p>Mismo flujo que el chofer pero sin furgoneta asignada — trabajo a pie.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">04 / TECNOLOGÍA</div>
+      <h2>Stack moderno. <em>Cero servidores</em> que mantener.</h2>
+    </div>
+
+    <div class="stack">
+      <ul class="stack-list reveal">
+        <li><span class="lbl">Frontend</span><span class="val">React Native <span class="badge">SDK 54</span></span></li>
+        <li><span class="lbl">Web build</span><span class="val">Expo Web</span></li>
+        <li><span class="lbl">Android</span><span class="val">APK · EAS Build</span></li>
+        <li><span class="lbl">Backend</span><span class="val">Supabase <span class="badge">PostgreSQL</span></span></li>
+        <li><span class="lbl">Tiempo real</span><span class="val">Realtime WebSocket</span></li>
+        <li><span class="lbl">Lógica pesada</span><span class="val">Edge Functions <span class="badge">Deno</span></span></li>
+        <li><span class="lbl">Archivos</span><span class="val">Supabase Storage</span></li>
+        <li><span class="lbl">Programación</span><span class="val">pg_cron / cron-job.org</span></li>
+      </ul>
+
+      <div class="diagram-wrap reveal">
+<div class="diagram"><span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="k">App React Native</span>      <span class="c">│</span>
+<span class="c">│</span>  (APK · & · Web)      <span class="c">│</span>
+<span class="c">└───────────┬─────────────┘</span>
+            │
+            ▼
+<span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="m">Supabase</span>               <span class="c">│</span>
+<span class="c">│</span>  ─ PostgreSQL           <span class="c">│</span>
+<span class="c">│</span>  ─ Auth &amp; RLS           <span class="c">│</span>
+<span class="c">│</span>  ─ Realtime WebSocket   <span class="c">│</span>
+<span class="c">│</span>  ─ Storage (fotos)      <span class="c">│</span>
+<span class="c">└───────────┬─────────────┘</span>
+            │
+            ▼
+<span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="k">Edge Functions</span>         <span class="c">│</span>
+<span class="c">│</span>  ─ generar-factura      <span class="c">│</span>
+<span class="c">│</span>  ─ generar-historial    <span class="c">│</span>
+<span class="c">│</span>  ─ cerrar-rutas-abier.  <span class="c">│</span>
+<span class="c">└─────────────────────────┘</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">05 / EVOLUCIÓN</div>
+      <h2>Crecemos <em>con</em> tus necesidades reales.</h2>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date">v5.0 · 2025</div>
+        <div class="tl-title">Base operativa</div>
+        <div class="tl-desc">Logs de jornadas, monitor admin, gestión de choferes, gastos, facturación básica.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">v6.0 · 2026 Q1</div>
+        <div class="tl-title">Alertas bloqueantes + Selector de flota</div>
+        <div class="tl-desc">Popup bloqueante de admin, selector de furgoneta disponible, DatePicker nativo, exportación Excel real.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">v6.1 · 2026 Q2</div>
+        <div class="tl-title">Tiempo real, multi-empresa y soporte web completo</div>
+        <div class="tl-desc">Contactos configurables por empresa, Realtime para admins, historial exportable, cierre automático a las 23:59, soporte total en navegador.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Próximo</div>
+        <div class="tl-title">Lo que viene</div>
+        <div class="tl-desc">Push notifications, geolocalización opcional, dashboard BI por empresa, integración directa con gestoría.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap final-content">
+    <h2>Deja de pelearte con <em>hojas de cálculo</em>.</h2>
+    <p>Pruébalo con tu propia empresa. Configuración guiada, migración desde Excel y soporte directo incluidos.</p>
+    <a href="https://www.gutitrack.com" target="_blank" rel="noopener noreferrer" class="cta-big">
+      www.gutitrack.com
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 GutiTrack · Fleet software</div>
+    <div>Dossier v6.1 · <a href="https://www.gutitrack.com" target="_blank" rel="noopener noreferrer">gutitrack.com</a></div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal con fallback si IntersectionObserver no está disponible (iOS muy viejo)
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+  }
+</script>
+
+</body>
+</html>
