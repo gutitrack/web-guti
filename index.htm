@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="GutiTrack: software de gestión de flotas con OCR, push notifications y trazabilidad completa basada en ciclo PDCA.">
+<title>GutiTrack — Dossier v6.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #111111;
+    --bg-3: #161616;
+    --border: #242424;
+    --ink: #f0f0f0;
+    --ink-dim: #888;
+    --ink-dimmer: #555;
+    --yellow: #FFD400;
+    --yellow-dim: #D4AF00;
+    --orange: #FF8800;
+    --green: #4CAF50;
+    --red: #FF4444;
+    --blue: #2196F3;
+    --cyan: #00E5FF;
+    --purple: #9C27B0;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: rgba(255,212,0,0.15); }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    overflow-x: hidden;
+    font-weight: 400;
+    min-height: 100vh;
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-overflow-scrolling: touch;
+  }
+  ::selection { background: var(--yellow); color: #000; }
+  ::-moz-selection { background: var(--yellow); color: #000; }
+  a { color: inherit; -webkit-touch-callout: none; }
+  img, svg { max-width: 100%; height: auto; display: block; }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,212,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,212,0,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @media (max-width: 640px) {
+    body::before { background-size: 40px 40px; }
+  }
+
+  @media (min-width: 768px) {
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 2;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 32px);
+    padding-left: max(clamp(20px, 5vw, 32px), var(--safe-left));
+    padding-right: max(clamp(20px, 5vw, 32px), var(--safe-right));
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.9);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding-top: var(--safe-top);
+  }
+  nav .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(15px, 2vw, 18px);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: inherit;
+    min-height: 44px;
+    min-width: 44px;
+    padding-right: 4px;
+  }
+  .brand-logo {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--yellow);
+    color: #000;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 14px;
+    box-shadow: 0 0 20px rgba(255,212,0,0.3);
+    flex-shrink: 0;
+  }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: var(--yellow);
+    color: #000;
+    font-weight: 700;
+    font-size: clamp(11px, 1.4vw, 13px);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 2px solid var(--yellow);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  @media (hover: hover) {
+    .cta-btn:hover {
+      background: transparent;
+      color: var(--yellow);
+      box-shadow: 0 0 24px rgba(255,212,0,0.4);
+      transform: translateY(-1px);
+    }
+  }
+  .cta-btn:active { transform: scale(0.97); }
+  .cta-btn--ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--border);
+  }
+  @media (hover: hover) {
+    .cta-btn--ghost:hover {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      box-shadow: none;
+    }
+  }
+
+  /* ── HERO ── */
+  header.hero {
+    padding: calc(var(--safe-top) + 120px) 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    header.hero { padding: calc(var(--safe-top) + 140px) 0 80px; }
+  }
+  header.hero::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: -30%;
+    width: 80vw;
+    height: 80vw;
+    max-width: 800px;
+    max-height: 800px;
+    background: radial-gradient(circle, rgba(255,212,0,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+    background: rgba(255,212,0,0.08);
+    border: 1px solid rgba(255,212,0,0.3);
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--yellow);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px;
+    background: var(--yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--yellow);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  h1.hero-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(38px, 9vw, 128px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    max-width: 16ch;
+    word-break: break-word;
+    hyphens: auto;
+  }
+  h1.hero-title .accent { color: var(--yellow); font-style: italic; display: inline; }
+  h1.hero-title .strike {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+    color: var(--ink-dim);
+    font-size: 0.48em;
+    font-weight: normal;
+    font-style: normal;
+    display: block;
+    margin-bottom: 10px;
+    letter-spacing: 0;
+    font-family: 'Manrope', sans-serif;
+    line-height: 1.3;
+  }
+  .hero-sub {
+    max-width: 580px;
+    font-size: clamp(15px, 2vw, 19px);
+    color: var(--ink-dim);
+    margin-bottom: 32px;
+    line-height: 1.55;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+  }
+  @media (min-width: 768px) {
+    .hero-actions { gap: 16px; margin-bottom: 80px; }
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+  }
+  @media (min-width: 768px) {
+    .hero-stats {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      padding-top: 32px;
+    }
+  }
+  .stat { padding-right: 20px; }
+  @media (min-width: 768px) {
+    .stat { border-right: 1px solid var(--border); padding-right: 24px; }
+    .stat:last-child { border-right: none; }
+  }
+  .stat-num {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(34px, 5vw, 48px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--yellow);
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  @media (min-width: 768px) {
+    .stat-label { font-size: 11px; }
+  }
+
+  /* ── SECTION HEAD ── */
+  section { padding: 70px 0; position: relative; }
+  @media (min-width: 768px) { section { padding: 100px 0; } }
+  .section-head { display: block; margin-bottom: 48px; }
+  @media (min-width: 768px) {
+    .section-head {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 48px;
+      margin-bottom: 64px;
+      align-items: start;
+    }
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--yellow);
+    letter-spacing: 0.1em;
+    padding-top: 8px;
+    border-top: 2px solid var(--yellow);
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 768px) {
+    .section-num { font-size: 13px; margin-bottom: 0; }
+  }
+  h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(28px, 5.5vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+    word-break: break-word;
+  }
+  h2 em { color: var(--yellow); font-style: italic; }
+
+  /* ── MISIÓN VISIÓN ── */
+  .mv-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 800px) { .mv-grid { grid-template-columns: 1fr 1fr; gap: 24px; } }
+  .mv-card {
+    padding: 28px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-left: 3px solid var(--yellow);
+  }
+  @media (min-width: 768px) { .mv-card { padding: 40px; } }
+  .mv-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px;
+    color: var(--yellow);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) { .mv-card h3 { font-size: 28px; } }
+  .mv-card p {
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  @media (min-width: 768px) { .mv-card p { font-size: 16px; } }
+  .mv-card .icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  /* ── PROBLEM ── */
+  .problem {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .problem-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 600px) { .problem-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+  .problem-card {
+    padding: 24px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    position: relative;
+  }
+  @media (min-width: 768px) { .problem-card { padding: 32px; } }
+  .problem-card .icon { font-size: 28px; margin-bottom: 14px; display: block; }
+  .problem-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--red);
+  }
+  .problem-card p { color: var(--ink-dim); font-size: 14px; }
+  @media (min-width: 768px) {
+    .problem-card h3 { font-size: 20px; }
+    .problem-card p { font-size: 15px; }
+  }
+
+  /* ── FEATURES ── */
+  .feat-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 768px) { .feat-grid { grid-template-columns: repeat(12, 1fr); gap: 24px; } }
+  .feat {
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    border-radius: 4px;
+    position: relative;
+    background: var(--bg-2);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  @media (min-width: 768px) { .feat { padding: 36px; } }
+  @media (hover: hover) {
+    .feat:hover { border-color: var(--yellow); transform: translateY(-4px); }
+  }
+  @media (min-width: 768px) {
+    .feat--wide { grid-column: span 7; }
+    .feat--narrow { grid-column: span 5; }
+    .feat--half { grid-column: span 6; }
+    .feat--third { grid-column: span 4; }
+  }
+  .feat-id {
+    position: absolute;
+    top: 16px; right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dimmer);
+    letter-spacing: 0.1em;
+  }
+  @media (min-width: 768px) { .feat-id { top: 20px; right: 24px; font-size: 11px; } }
+  .feat h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+    padding-right: 50px;
+  }
+  @media (min-width: 768px) { .feat h3 { font-size: 26px; padding-right: 60px; } }
+  .feat h3 .em { color: var(--yellow); }
+  .feat p { color: var(--ink-dim); font-size: 14px; margin-bottom: 18px; }
+  @media (min-width: 768px) { .feat p { font-size: 15px; margin-bottom: 20px; } }
+  .feat ul { list-style: none; padding: 0; }
+  .feat ul li {
+    padding: 8px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 13px;
+    color: var(--ink);
+    border-bottom: 1px dashed var(--border);
+    line-height: 1.4;
+  }
+  @media (min-width: 768px) { .feat ul li { font-size: 14px; } }
+  .feat ul li:last-child { border-bottom: none; }
+  .feat ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--yellow);
+    font-weight: 700;
+  }
+
+  /* ── PDCA ── */
+  .pdca-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) { .pdca-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1000px) { .pdca-grid { grid-template-columns: repeat(4, 1fr); } }
+  .pdca-card {
+    padding: 24px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-top: 4px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) { .pdca-card { padding: 32px; } }
+  .pdca-card::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: 0.08;
+    background: currentColor;
+  }
+  .pdca-card.plan { border-top-color: var(--blue); color: var(--blue); }
+  .pdca-card.do { border-top-color: var(--green); color: var(--green); }
+  .pdca-card.check { border-top-color: var(--orange); color: var(--orange); }
+  .pdca-card.act { border-top-color: var(--purple); color: var(--purple); }
+  .pdca-card .step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .pdca-card h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 26px;
+    margin-bottom: 14px;
+    letter-spacing: -0.02em;
+  }
+  .pdca-card .label {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .pdca-card p {
+    color: var(--ink-dim);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── ROLES ── */
+  .roles {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .role-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 500px) { .role-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .role-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+  .role {
+    padding: 22px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-top: 3px solid;
+    border-radius: 4px;
+  }
+  @media (min-width: 768px) { .role { padding: 28px; } }
+  .role--super { border-top-color: var(--purple); }
+  .role--admin { border-top-color: var(--yellow); }
+  .role--chofer { border-top-color: var(--green); }
+  .role--andarin { border-top-color: var(--blue); }
+  .role-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+  .role h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  @media (min-width: 768px) { .role h3 { font-size: 22px; } }
+  .role p { font-size: 13px; color: var(--ink-dim); }
+
+  /* ── TECH STACK ── */
+  .stack { display: grid; grid-template-columns: 1fr; gap: 40px; align-items: start; }
+  @media (min-width: 900px) { .stack { grid-template-columns: 1fr 1fr; gap: 64px; } }
+  .stack-list { list-style: none; }
+  .stack-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    gap: 12px;
+  }
+  @media (min-width: 768px) { .stack-list li { padding: 18px 0; font-size: 15px; } }
+  .stack-list li:first-child { border-top: 1px solid var(--border); }
+  .stack-list .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  @media (min-width: 768px) { .stack-list .lbl { font-size: 12px; } }
+  .stack-list .val {
+    font-weight: 600;
+    color: var(--ink);
+    text-align: right;
+  }
+  .stack-list .val .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(255,212,0,0.1);
+    color: var(--yellow);
+    font-size: 11px;
+    border-radius: 3px;
+    margin-left: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .diagram-wrap {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (min-width: 768px) { .diagram-wrap { padding: 32px; } }
+  .diagram {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    white-space: pre;
+    min-width: 300px;
+  }
+  @media (min-width: 768px) { .diagram { font-size: 12px; line-height: 1.8; } }
+  .diagram .k { color: var(--yellow); font-weight: 600; }
+  .diagram .c { color: var(--green); }
+  .diagram .m { color: var(--blue); }
+
+  /* ── TIMELINE ── */
+  .timeline { position: relative; padding-left: 32px; }
+  @media (min-width: 768px) { .timeline { padding-left: 40px; } }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--yellow), transparent);
+  }
+  @media (min-width: 768px) { .timeline::before { left: 12px; } }
+  .tl-item { position: relative; padding-bottom: 32px; }
+  @media (min-width: 768px) { .tl-item { padding-bottom: 40px; } }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -28px; top: 8px;
+    width: 12px; height: 12px;
+    background: var(--yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 16px rgba(255,212,0,0.5);
+  }
+  @media (min-width: 768px) {
+    .tl-item::before { left: -34px; width: 14px; height: 14px; box-shadow: 0 0 0 4px var(--bg), 0 0 16px rgba(255,212,0,0.5); }
+  }
+  .tl-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--yellow);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  @media (min-width: 768px) { .tl-date { font-size: 12px; margin-bottom: 8px; } }
+  .tl-title { font-family: 'Archivo Black', sans-serif; font-size: 18px; margin-bottom: 6px; }
+  @media (min-width: 768px) { .tl-title { font-size: 20px; } }
+  .tl-desc { color: var(--ink-dim); font-size: 13px; line-height: 1.5; }
+  @media (min-width: 768px) { .tl-desc { font-size: 14px; } }
+
+  /* ── CTA FINAL ── */
+  .final {
+    padding: 90px 0 calc(90px + var(--safe-bottom));
+    text-align: center;
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) { .final { padding: 140px 0 calc(140px + var(--safe-bottom)); } }
+  .final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center top, rgba(255,212,0,0.15), transparent 60%),
+      radial-gradient(ellipse at center bottom, rgba(255,136,0,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .final-content { position: relative; z-index: 2; }
+  .final h2 { max-width: 20ch; margin: 0 auto 20px; }
+  .final p {
+    color: var(--ink-dim);
+    max-width: 520px;
+    margin: 0 auto 32px;
+    font-size: clamp(15px, 2vw, 18px);
+  }
+  .cta-big {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 32px;
+    background: var(--yellow);
+    color: #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(14px, 2vw, 18px);
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 10px 40px rgba(255,212,0,0.3);
+    min-height: 56px;
+    max-width: 100%;
+    word-break: break-word;
+    text-align: center;
+  }
+  @media (min-width: 768px) { .cta-big { padding: 22px 44px; gap: 14px; } }
+  @media (hover: hover) {
+    .cta-big:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 60px rgba(255,212,0,0.5);
+    }
+    .cta-big:hover .arrow { transform: translateX(6px); }
+  }
+  .cta-big:active { transform: scale(0.98); }
+  .cta-big .arrow { display: inline-block; transition: transform 0.3s ease; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 0 calc(32px + var(--safe-bottom));
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-dimmer);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  @media (min-width: 768px) { footer { padding: 40px 0 calc(40px + var(--safe-bottom)); font-size: 11px; } }
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  footer a { color: var(--yellow); text-decoration: none; }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="brand">
+      <span class="brand-logo">G</span>
+      <span>GUTITRACK</span>
+    </a>
+    <a href="https://youtube.com/@gutitrack?si=er9VocQmqfIRUg_W" rel="noopener noreferrer" class="cta-btn">
+      Visitar web →
+    </a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="eyebrow">
+      <span class="dot"></span>
+      Dossier v6.1 · Edición completa
+    </div>
+    <h1 class="hero-title">
+      <span class="strike">Hojas de cálculo, WhatsApp, partes en papel.</span>
+      Toda la <span class="accent">operativa</span> de tu flota, <span class="accent">en una sola app inteligente.</span>
+    </h1>
+    <p class="hero-sub">
+      GutiTrack reemplaza los procesos manuales con una plataforma con OCR de tickets y cuentakilómetros, notificaciones push, tiempo real y trazabilidad total — sustituye los excels, los mensajes dispersos y los partes en papel para que tu equipo pase de tres administrativos a uno.
+    </p>
+    <div class="hero-actions">
+      <a href="https://youtu.be/RMXSglqGSgI?si=h-GmFfsfDpiDfyoJ" target="_blank" rel="noopener noreferrer" class="cta-btn">
+        Ver canal  Youtube →
+      </a>
+      <a href="#mision" class="cta-btn cta-btn--ghost">
+        Leer el dossier
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">Roles de usuario</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">12+</div>
+        <div class="stat-label">Módulos integrados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">5s</div>
+        <div class="stat-label">Refresco en vivo</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Cierre automático</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── MISIÓN Y VISIÓN ── -->
+<section id="mision" style="background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">01 / NUESTRO PROPÓSITO</div>
+      <h2>Misión, visión y <em>compromiso</em>.</h2>
+    </div>
+
+    <div class="mv-grid">
+      <div class="mv-card reveal">
+        <span class="icon">🎯</span>
+        <h3>Misión</h3>
+        <p>
+          Empoderar a las empresas de transporte y logística con una herramienta tecnológica accesible, intuitiva y potente, que les permita gestionar su operativa diaria de forma eficiente, transparente y trazable. Devolver a los gerentes el tiempo perdido en tareas administrativas para que puedan enfocarse en hacer crecer su negocio.
+        </p>
+      </div>
+      <div class="mv-card reveal">
+        <span class="icon">🌅</span>
+        <h3>Visión</h3>
+        <p>
+          Ser la plataforma de referencia en gestión de flotas para PYMES en habla hispana, reconocida por convertir operaciones desordenadas en sistemas medibles y mejorables. Aspiramos a que cada cliente recupere control, datos y horas de su día gracias a GutiTrack.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROBLEMA ── -->
+<section class="problem">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">02 / EL PROBLEMA</div>
+      <h2>Gestionar una flota, no debería <em>quemar</em>toda la vida.. ..</h2>
+    </div>
+
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <span class="icon">📋</span>
+        <h3>Partes perdidos</h3>
+        <p>El chofer anota en papel, el administrativo los pasa a Excel, alguien pierde una hoja y la factura del mes sale mal.</p>
+      </div>
+      <div class="problem-card reveal">
+        <span class="icon">📱</span>
+        <h3>WhatsApp caótico</h3>
+        <p>Tickets de gasolina, incidencias, avisos a conductores… todo mezclado en un chat imposible de auditar.</p>
+      </div>
+      <div class="problem-card reveal">
+        <span class="icon">🧾</span>
+        <h3>Facturación manual</h3>
+        <p>Cada mes, alguien tiene que copiar datos, calcular entregas, cuadrar las rutas y rellenar una plantilla a mano.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOLUCIÓN ── -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">03 / LA SOLUCIÓN</div>
+      <h2>Una app. Cuatro roles. <em>Inteligencia artificial</em> al servicio de tu operativa.</h2>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat feat--wide reveal">
+        <span class="feat-id">MOD.01</span>
+        <h3>OCR <span class="em">automático</span></h3>
+        <p>El chofer hace foto al ticket de gasolina o al cuentakilómetros y la app extrae litros, importe y kilómetros automáticamente. Funciona sin escribir nada manualmente.</p>
+        <ul>
+          <li>OCR en tickets de gasolinera (Repsol, Cepsa, Galp...)</li>
+          <li>OCR del cluster digital de la furgoneta</li>
+          <li>El chofer puede revisar y corregir antes de guardar</li>
+          <li>Funciona en web, APK Android y iOS</li>
+        </ul>
+      </div>
+      <div class="feat feat--narrow reveal">
+        <span class="feat-id">MOD.02</span>
+        <h3>Notificaciones <span class="em">push</span></h3>
+        <p>El admin envía una alerta y todos los choferes la reciben como un WhatsApp en su móvil, aunque la app esté cerrada.</p>
+        <ul>
+          <li>Sonido + vibración + lockscreen</li>
+          <li>Funciona con la app cerrada</li>
+          <li>Powered by Expo Push API</li>
+        </ul>
+      </div>
+
+      <div class="feat feat--narrow reveal">
+        <span class="feat-id">MOD.03</span>
+        <h3>Monitor <span class="em">en vivo</span></h3>
+        <p>El admin ve en tiempo real cada paquete entregado, gasto registrado e incidencia.</p>
+        <ul>
+          <li>Indicador "🟢 EN VIVO" siempre visible</li>
+          <li>WebSocket Realtime + polling 5s</li>
+          <li>Refresca al volver a primer plano</li>
+        </ul>
+      </div>
+      <div class="feat feat--wide reveal">
+        <span class="feat-id">MOD.04</span>
+        <h3>Facturación <span class="em">en un clic</span></h3>
+        <p>Selecciona chofer, período y listo. GutiTrack rellena tu plantilla Excel real (con tu logo, formato y celdas) y la devuelve lista para WhatsApp, email o guardar.</p>
+        <ul>
+          <li>Edge Functions Deno + xlsx</li>
+          <li>Tu propia plantilla embebida</li>
+          <li>Previsualización antes de generar</li>
+          <li>Funciona en web y en APK</li>
+        </ul>
+      </div>
+
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.05</span>
+        <h3>Flota <span class="em">inteligente</span></h3>
+        <p>Una sola fuente de verdad por furgoneta: matrícula, km, ITV, seguro, estado. Selector visual con disponibilidad y bloqueo automático cuando ya está en uso.</p>
+      </div>
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.06</span>
+        <h3>Validación <span class="em">de coherencia</span></h3>
+        <p>Al cerrar jornada, GutiTrack valida que entregas + incidencias = paquetes cargados. Si faltan paquetes, sugiere sumarlos a incidencias automáticamente. Cero pérdidas sin justificar.</p>
+      </div>
+
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.07</span>
+        <h3>Cierre <span class="em">automático</span></h3>
+        <p>Si un chofer olvida cerrar la jornada, GutiTrack la cierra sola a las 23:59 y libera la furgoneta para el día siguiente.</p>
+      </div>
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.08</span>
+        <h3>Sesión <span class="em">persistente</span></h3>
+        <p>El chofer abre la app y ya está dentro. No tiene que volver a logearse cada día. Cierra cuando quiere con un toque.</p>
+      </div>
+      <div class="feat feat--third reveal">
+        <span class="feat-id">MOD.09</span>
+        <h3>Multi-empresa</h3>
+        <p>Cada empresa ve solo sus datos. El superadmin gestiona empresas, límites por plan contratado y feature flags.</p>
+      </div>
+
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.10</span>
+        <h3>Seguridad <span class="em">reforzada</span></h3>
+        <p>Protección anti-fuerza-bruta: tras 5 intentos fallidos en 5 minutos, la cuenta queda bloqueada 15 minutos automáticamente. Aviso visual al usuario tras el tercer intento.</p>
+      </div>
+      <div class="feat feat--half reveal">
+        <span class="feat-id">MOD.11</span>
+        <h3>Historial <span class="em">auditable</span></h3>
+        <p>Filtra por fecha, chofer, matrícula o ruta. Exporta a Excel con un clic. Cada jornada queda registrada con cargados, entregas, recogidas, incidencias, KM y matrícula.</p>
+      </div>
+
+      <div class="feat reveal" style="grid-column: span 12;">
+        <span class="feat-id">MOD.12</span>
+        <h3>Plan contratado <span class="em">visible y respetado</span></h3>
+        <p>Cada admin ve su plan en barras de progreso (X/Y choferes, X/Y andarines, X/Y vehículos). Si intenta superar su plan, GutiTrack lo bloquea con instrucciones claras para ampliarlo. Sin sorpresas, sin facturas inesperadas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PDCA — TRAZABILIDAD ── -->
+<section style="background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">04 / TRAZABILIDAD</div>
+      <h2>De la <em>improvisación</em> a la mejora continua: el ciclo PDCA en tu flota.</h2>
+    </div>
+
+    <p class="reveal" style="color: var(--ink-dim); font-size: clamp(15px, 1.8vw, 17px); max-width: 760px; margin-bottom: 48px; line-height: 1.7;">
+      GutiTrack no es solo un software de gestión: es una herramienta diseñada para que tu admin aplique el ciclo Deming (Plan · Do · Check · Act) sobre la operación real, con datos reales, en cada turno. La trazabilidad completa permite ver qué funciona, qué no, y mejorar el desempeño y la productividad de forma continua.
+    </p>
+
+    <div class="pdca-grid">
+      <div class="pdca-card plan reveal">
+        <div class="step">Paso 01</div>
+        <h3>PLAN</h3>
+        <div class="label">Planificar</div>
+        <p>
+          Define rutas, asigna furgonetas a choferes, configura paquetes a entregar y establece objetivos diarios. Los planes contratados (límites por rol) ayudan a dimensionar el equipo correctamente desde el inicio.
+        </p>
+      </div>
+      <div class="pdca-card do reveal">
+        <div class="step">Paso 02</div>
+        <h3>DO</h3>
+        <div class="label">Hacer</div>
+        <p>
+          Los choferes ejecutan: inician ruta con foto del cuentakilómetros, registran entregas y recogidas con un toque, suben tickets de gasolina con OCR automático. Toda la operación queda capturada sin papel ni dobles entradas.
+        </p>
+      </div>
+      <div class="pdca-card check reveal">
+        <div class="step">Paso 03</div>
+        <h3>CHECK</h3>
+        <div class="label">Verificar</div>
+        <p>
+          El admin ve el monitor en tiempo real, revisa el historial filtrado por chofer/ruta/matrícula, exporta a Excel para análisis y consulta los consumos L/100km por vehículo. La validación entregas + incidencias = cargados elimina las pérdidas sin justificar.
+        </p>
+      </div>
+      <div class="pdca-card act reveal">
+        <div class="step">Paso 04</div>
+        <h3>ACT</h3>
+        <div class="label">Actuar</div>
+        <p>
+          Con los datos extraídos, el admin envía alertas push instantáneas, ajusta rutas, reasigna furgonetas, identifica choferes con baja efectividad y optimiza el siguiente ciclo. El proceso se repite cada día, mejorando la productividad de forma medible.
+        </p>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top: 48px; padding: 28px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--yellow);">
+      <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 20px; color: var(--yellow); margin-bottom: 12px;">📈 El resultado: mejora continua medible</h3>
+      <p style="color: var(--ink); font-size: 15px; line-height: 1.7;">
+        Cada ciclo PDCA con GutiTrack genera datos comparables: efectividad por chofer, consumo por vehículo, incidencias por ruta, tiempos de entrega. Esto convierte decisiones intuitivas en decisiones basadas en evidencia, y eleva la productividad de forma sostenida sin contratar más personal.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── ROLES ── -->
+<section class="roles">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">05 / ROLES</div>
+      <h2>Cada persona ve <em>lo que necesita</em>. Ni más, ni menos.</h2>
+    </div>
+
+    <div class="role-grid">
+      <div class="role role--super reveal">
+        <div class="role-tag">NIVEL 0</div>
+        <h3>SuperAdmin</h3>
+        <p>Crea empresas, configura límites por plan contratado, da de alta admins y choferes asociados a cualquier empresa. Visión total del sistema.</p>
+      </div>
+      <div class="role role--admin reveal">
+        <div class="role-tag">NIVEL 1</div>
+        <h3>Admin</h3>
+        <p>Da de alta choferes, registra furgonetas, configura contactos, factura, audita jornadas en vivo, envía alertas push.</p>
+      </div>
+      <div class="role role--chofer reveal">
+        <div class="role-tag">NIVEL 2</div>
+        <h3>Chofer</h3>
+        <p>Selecciona furgoneta, foto del cluster para iniciar, registra entregas/recogidas/incidencias, sube tickets de combustible con OCR.</p>
+      </div>
+      <div class="role role--andarin reveal">
+        <div class="role-tag">NIVEL 2</div>
+        <h3>Andarín</h3>
+        <p>Mismo flujo que el chofer pero sin furgoneta — trabajo a pie. Cumplimiento de paquetes con la misma trazabilidad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TECNOLOGÍA ── -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">06 / TECNOLOGÍA</div>
+      <h2>Stack moderno. <em>Cero servidores</em> que mantener.</h2>
+    </div>
+
+    <div class="stack">
+      <ul class="stack-list reveal">
+        <li><span class="lbl">Frontend</span><span class="val">React Native <span class="badge">SDK 54</span></span></li>
+        <li><span class="lbl">Web build</span><span class="val">Expo Web</span></li>
+        <li><span class="lbl">Android</span><span class="val">APK · EAS Build</span></li>
+        <li><span class="lbl">iOS</span><span class="val">Compatible</span></li>
+        <li><span class="lbl">Backend</span><span class="val">Supabase <span class="badge">PostgreSQL</span></span></li>
+        <li><span class="lbl">Tiempo real</span><span class="val">Realtime WebSocket</span></li>
+        <li><span class="lbl">Lógica pesada</span><span class="val">Edge Functions <span class="badge">Deno</span></span></li>
+        <li><span class="lbl">OCR</span><span class="val">OCR.space API</span></li>
+        <li><span class="lbl">Push notifs</span><span class="val">Expo Push API</span></li>
+        <li><span class="lbl">Almacenamiento</span><span class="val">Supabase Storage</span></li>
+        <li><span class="lbl">Cron jobs</span><span class="val">cron-job.org</span></li>
+        <li><span class="lbl">Sesión</span><span class="val">AsyncStorage / localStorage</span></li>
+      </ul>
+
+      <div class="diagram-wrap reveal">
+<div class="diagram"><span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="k">App React Native</span>      <span class="c">│</span>
+<span class="c">│</span>  (APK · iOS · Web)      <span class="c">│</span>
+<span class="c">└───────────┬─────────────┘</span>
+            │
+            ├──► <span class="m">OCR.space</span> (tickets, cluster)
+            │
+            ├──► <span class="m">Expo Push</span> (notificaciones)
+            │
+            ▼
+<span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="m">Supabase</span>               <span class="c">│</span>
+<span class="c">│</span>  ─ PostgreSQL           <span class="c">│</span>
+<span class="c">│</span>  ─ Auth + RLS           <span class="c">│</span>
+<span class="c">│</span>  ─ Realtime WebSocket   <span class="c">│</span>
+<span class="c">│</span>  ─ Storage (fotos)      <span class="c">│</span>
+<span class="c">└───────────┬─────────────┘</span>
+            │
+            ▼
+<span class="c">┌─────────────────────────┐</span>
+<span class="c">│</span>  <span class="k">Edge Functions</span>         <span class="c">│</span>
+<span class="c">│</span>  ─ generar-factura      <span class="c">│</span>
+<span class="c">│</span>  ─ generar-historial    <span class="c">│</span>
+<span class="c">│</span>  ─ cerrar-rutas-abier.  <span class="c">│</span>
+<span class="c">│</span>  ─ enviar-notif-push    <span class="c">│</span>
+<span class="c">└─────────────────────────┘</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── EVOLUCIÓN ── -->
+<section style="background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">07 / EVOLUCIÓN</div>
+      <h2>Crecemos <em>con</em> tus necesidades reales.</h2>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date">v5.0 · 2025</div>
+        <div class="tl-title">Base operativa</div>
+        <div class="tl-desc">Logs de jornadas, monitor admin, gestión de choferes, gastos, facturación básica.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">v6.0 · 2026 Q1</div>
+        <div class="tl-title">Alertas bloqueantes y selector de flota</div>
+        <div class="tl-desc">Popup bloqueante de admin, selector de furgoneta disponible, DatePicker nativo, exportación Excel real.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">v6.1 · 2026 Q2</div>
+        <div class="tl-title">Inteligencia, automatización y trazabilidad PDCA</div>
+        <div class="tl-desc">OCR automático de tickets y cuentakilómetros, notificaciones push tipo WhatsApp, sesión persistente, validación de coherencia entregas/incidencias, protección anti-fuerza-bruta, contactos por empresa, tiempo real con WebSocket, cierre automático a las 23:59, indicadores de planes contratados, soporte web completo.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date">Próximo</div>
+        <div class="tl-title">Lo que viene</div>
+        <div class="tl-desc">Geolocalización opcional, dashboard BI por empresa con métricas PDCA visualizadas, integración directa con gestoría, IA predictiva de mantenimiento.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA FINAL ── -->
+<section class="final">
+  <div class="wrap final-content">
+    <h2>Deja de pelearte con <em>hojas de cálculo</em>.</h2>
+    <p>Pruébalo con tu propia empresa. Configuración guiada, migración desde Excel y soporte directo incluidos.</p>
+    <a href="https://www.gutitrack.com" target="_blank" rel="noopener noreferrer" class="cta-big">
+      www.gutitrack.com
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 GutiTrack · Fleet management software</div>
+    <div>Dossier v6.1 · <a href="https://www.gutitrack.com" target="_blank" rel="noopener noreferrer">gutitrack.com</a></div>
+  </div>
+</footer>
+
+<script>
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+  }
+</script>
+
+</body>
+</html>
